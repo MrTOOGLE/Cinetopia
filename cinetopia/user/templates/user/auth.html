@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -71,6 +73,7 @@
 
 <div class="login-container">
     <h2>Авторизация</h2>
+    <img src="{% static 'user/image/logo.jpg' %}" alt="">
     <form action="#" method="post">
         <input type="text" placeholder="Имя пользователя" required>
         <input type="password" placeholder="Пароль" required>

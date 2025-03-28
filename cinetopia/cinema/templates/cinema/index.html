@@ -1,0 +1,41 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block main %}
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>Популярные фильмы</h2>
+                <ul class="movie-list">
+                    <li class="movie-item">
+                        <img src="{% static 'cinema/image/films/it.webp' %}" alt="Фильм 1">
+                        <h3>Оно</h3>
+                        <p>Ужасы, фэнтези, драма, детектив</p>
+                    </li>
+                    <li class="movie-item">
+                        <img src="{% static 'cinema/image/films/it.webp' %}" alt="Фильм 1">
+                        <h3>Оно</h3>
+                        <p>Ужасы, фэнтези, драма, детектив</p>
+                    </li>
+                    <li class="movie-item">
+                        <img src="{% static 'cinema/image/films/it.webp' %}" alt="Фильм 1">
+                        <h3>Оно</h3>
+                        <p>Ужасы, фэнтези, драма, детектив</p>
+                    </li>
+                    <li class="movie-item">
+                        <img src="{% static 'cinema/image/films/it.webp' %}" alt="Фильм 1">
+                        <h3>Оно</h3>
+                        <p>Ужасы, фэнтези, драма, детектив</p>
+                    </li>
+                    <li class="movie-item">
+                        <img src="{% static 'cinema/image/films/it.webp' %}" alt="Фильм 1">
+                        <h3>Оно</h3>
+                        <p>Ужасы, фэнтези, драма, детектив</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </main>
+{% endblock %}

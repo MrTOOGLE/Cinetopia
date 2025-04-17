@@ -1,0 +1,43 @@
+services:
+  mysql:
+    image: mysql:9.1.0
+    container_name: cinetopia-mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: cinetopia
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - mysql_network
+    command: --default-authentication-plugin=mysql_native_password
+
+  backend:
+    build: .
+    container_name: cinetopia-django
+    volumes:
+      - .:/backend
+      - static_volume:/backend/static
+      - media_volume:/backend/media
+    env_file:
+      - /cinetopia/.env
+    depends_on:
+      - mysql
+    command: >
+      bash -c "python manage.py collectstatic --noinput && gunicorn -b 0.0.0.0:8000 cinetopia.wsgi:application"
+    networks:
+      - mysql_network
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:
+
+networks:
+  mysql_network:
+    driver: bridge

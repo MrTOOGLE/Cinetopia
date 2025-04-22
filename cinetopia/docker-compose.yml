@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   mysql:
     image: mysql:9.1.0
@@ -12,10 +14,14 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql-init-scripts:/docker-entrypoint-initdb.d
     networks:
       - mysql_network
-    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend:
     build: .
@@ -25,11 +31,16 @@ services:
       - static_volume:/backend/static
       - media_volume:/backend/media
     env_file:
-      - /cinetopia/.env
+      - ./cinetopia/.env
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     command: >
-      bash -c "python manage.py collectstatic --noinput && gunicorn -b 0.0.0.0:8000 cinetopia.wsgi:application"
+      bash -c "python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn -b 0.0.0.0:8000 cinetopia.wsgi:application"
+    ports:
+      - "8000:8000"
     networks:
       - mysql_network
 

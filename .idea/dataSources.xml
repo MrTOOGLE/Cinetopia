@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="my_database@localhost" uuid="b5802414-ebcd-4250-97ad-3e7db3fda8cb">
+    <data-source source="LOCAL" name="cinetopia@localhost" uuid="3daf63bf-2900-4a7e-b17a-8898de0da9db">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/my_database</jdbc-url>
+      <jdbc-url>jdbc:mysql://localhost:3306/cinetopia</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

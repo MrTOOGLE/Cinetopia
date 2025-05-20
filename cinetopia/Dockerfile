@@ -15,7 +15,6 @@ RUN useradd -ms /bin/bash appuser && \
 
 WORKDIR /backend
 
-# Копируем все файлы из текущей директории
 COPY --chown=appuser:appuser . .
 
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt

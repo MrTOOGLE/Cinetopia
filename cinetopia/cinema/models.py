@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.text import slugify
 
 User = get_user_model()
 
@@ -8,26 +9,15 @@ User = get_user_model()
 class Country(models.Model):
     name = models.CharField(unique=True, max_length=100)
 
-
-class MovieCountry(models.Model):
-    movie = models.ForeignKey('Movie', models.CASCADE)
-    country = models.ForeignKey('Country', models.CASCADE)
-
-    class Meta:
-        unique_together = (('movie', 'country'),)
+    def __str__(self):
+        return self.name
 
 
 class Genre(models.Model):
     name = models.CharField(unique=True, max_length=50)
 
-
-class MovieGenre(models.Model):
-    movie = models.ForeignKey('Movie', models.CASCADE)
-    genre = models.ForeignKey('Genre', models.CASCADE)
-
-    class Meta:
-        unique_together = (('movie', 'genre'),)
-
+    def __str__(self):
+        return self.name
 
 class MovieType(models.Model):
     CONTENT_TYPES = [
@@ -45,6 +35,9 @@ class MovieType(models.Model):
         unique=True
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Movie(models.Model):
     CONTENT_TYPES = [
@@ -55,7 +48,7 @@ class Movie(models.Model):
         ('documentary', 'Документальный'),
         ('tv_show', 'ТВ-шоу'),
     ]
-
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     title = models.CharField(max_length=255)
     original_title = models.CharField(max_length=255, blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
@@ -77,8 +70,16 @@ class Movie(models.Model):
     added_by = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
     added_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
-    genres = models.ManyToManyField('Genre', related_name='movies', through='MovieGenre')
-    countries = models.ManyToManyField('Country', related_name='movies', through='MovieCountry')
+    genres = models.ManyToManyField('Genre', related_name='movies', blank=True)
+    countries = models.ManyToManyField('Country', related_name='movies', blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(f"{self.original_title}-{self.release_year}")
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Movie: {self.title} ({self.original_title})"
 
 
 class Rating(models.Model):
@@ -89,6 +90,8 @@ class Rating(models.Model):
     class Meta:
         unique_together = (('movie', 'user'),)
 
+    def __str__(self):
+        return f"{self.movie} - {self.user} ({self.rating})"
 
 class UserMovieList(models.Model):
     LIST_TYPES = [
@@ -105,3 +108,6 @@ class UserMovieList(models.Model):
 
     class Meta:
         unique_together = (('user', 'movie'),)
+
+    def __str__(self):
+        return f"{self.movie} - {self.user} ({self.list_type})"

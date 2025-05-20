@@ -1,0 +1,133 @@
+.movie-detail {
+    padding: 40px 0;
+    background-color: #fff;
+}
+
+.movie-detail .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.movie-header {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.movie-poster {
+    flex: 0 0 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.movie-poster img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.movie-info {
+    flex: 1;
+}
+
+.movie-info h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.original-title {
+    font-size: 1.2rem;
+    color: #666;
+    font-weight: normal;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.meta-info {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 1rem;
+}
+
+.rating-block {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.rating {
+    font-size: 1.8rem;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.rate-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.rate-btn:hover {
+    background-color: #555;
+}
+
+.genres, .countries {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.genre-tag, .country-tag {
+    background-color: #f0f0f0;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.description {
+    margin-bottom: 40px;
+}
+
+.description h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.description p {
+    line-height: 1.6;
+    color: #444;
+}
+
+.player {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background-color: black;
+}
+
+@media (max-width: 768px) {
+    .movie-header {
+        flex-direction: column;
+    }
+
+    .movie-poster {
+        flex: 0 0 auto;
+        max-width: 250px;
+        margin: 0 auto 20px;
+    }
+}

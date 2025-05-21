@@ -115,9 +115,12 @@
                         </span>
               <a href="{% url 'movie_detail' movie.slug %}">
                 <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
-                <h3>{{ movie.title }}</h3>
-                <h4>{{ movie.release_year }}</h4>
-                <p>{{ movie.genres.all|slice:"0:4"|join:', ' }}</p>
+                <div class="movie-details">
+                  <h3>{{ movie.title }}</h3>
+                  <h4>{{ movie.release_year }}</h4>
+                  <p>{{ movie.genres.all|slice:"0:4"|join:', ' }}</p>
+                </div>
+                
               </a>
             </div>
           {% endfor %}
@@ -212,6 +215,7 @@
               $('#rating').slider('setValue', [0, 10]);
               $('#rating-min').text('0');
               $('#rating-max').text('10');
+              $('#sort').val('-rating').trigger('change');
           });
           $('select').select2({
               theme: 'default',

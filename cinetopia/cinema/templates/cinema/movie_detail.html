@@ -2,79 +2,191 @@
 {% load static %}
 
 {% block title %}{{ movie.title }} - Cinetopia{% endblock %}
-
+{% block head %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+{% endblock %}
 {% block style %}
-    <link rel="stylesheet" href="{% static 'cinema/css/movie_detail.css' %}">
+  <link rel="stylesheet" href="{% static 'cinema/css/movie_detail.css' %}">
 {% endblock %}
 
 {% block main %}
-    <main class="movie-detail">
-        <div class="container">
-            <div class="movie-header">
-                <div class="movie-poster">
-                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
-                </div>
-                <div class="movie-info">
-                    <h1>{{ movie.title }}</h1>
-                    {% if movie.original_title %}
-                        <h2 class="original-title">{{ movie.original_title }}</h2>
-                    {% endif %}
-
-                    <div class="meta-info">
-                        <span class="release-year">{{ movie.release_year }}</span>
-                        <span class="duration">{{ movie.duration|default_if_none:"-" }} мин.</span>
-                        <span class="type">{{ movie.get_type_display }}</span>
-                    </div>
-
-                    <div class="rating-block">
-                        {% if movie.avg_rating %}
-                            <div class="rating rating-{{ movie.avg_rating|floatformat:"0" }}">
-                                {{ movie.avg_rating|floatformat:1 }}
-                            </div>
-                        {% else %}
-                            <div class="rating rating-none">Нет оценок</div>
-                        {% endif %}
-                        <button class="rate-btn">Оценить</button>
-                    </div>
-
-                    <div class="genres">
-                        {% for genre in movie.genres.all %}
-                            <span class="genre-tag">{{ genre.name }}</span>
-                        {% endfor %}
-                    </div>
-
-                    <div class="countries">
-                        {% for country in movie.countries.all %}
-                            <span class="country-tag">{{ country.name }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="movie-content">
-                <div class="description">
-                    <h3>Описание</h3>
-                    <p>{{ movie.description|default:"Описание отсутствует" }}</p>
-                </div>
-
-                {% if movie.movie_file %}
-                    <div class="player">
-                        <video
-                                id="video"
-                                class="video-js"
-                                controls
-                                preload="auto"
-                                width="700"
-                                height="500"
-                                data-setup="{}"
-                                poster="{{ random_frame_url|default:movie.poster.url }}"
-                        >
-                        <source src="{% url 'movie-stream' movie.id %}" type="video/mp4"/>
-                        <source src="{% url 'movie-stream' movie.id %}" type="video/webm"/>
-                        </video>
-                    </div>
-                {% endif %}
-            </div>
+  <main class="movie-detail">
+    <div class="container">
+      <div class="movie-header">
+        <div class="movie-poster">
+          <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
         </div>
-    </main>
+        <div class="movie-info">
+          <h1>{{ movie.title }}</h1>
+          {% if movie.original_title %}
+            <h2 class="original-title">{{ movie.original_title }}</h2>
+          {% endif %}
+
+          <div class="meta-info">
+            <span class="release-year">{{ movie.release_year }}</span>
+            <span class="duration">{{ movie.duration|default_if_none:"-" }} мин.</span>
+            <span class="type">{{ movie.get_type_display }}</span>
+          </div>
+
+          <div class="rating-block">
+            {% if movie.avg_rating %}
+              <div class="rating rating-{{ movie.avg_rating|floatformat:"0" }}">
+                {{ movie.avg_rating|floatformat:1 }}
+              </div>
+            {% else %}
+              <div class="rating rating-none" style="color: #ddd">Нет оценок</div>
+            {% endif %}
+
+            {% if not user_rating %}
+              <div class="custom-rating">
+                <div class="stars-container">
+                  {% for i in "0123456789" %}
+                    <span class="star" data-value="{{ forloop.counter }}">★</span>
+                  {% endfor %}
+                </div>
+                <span class="rating-value"><span id="selected-rating">0</span>/10</span>
+                <button class="rate-btn" id="submit-rating" disabled>Оценить</button>
+              </div>
+            {% else %}
+              <div class="user-rating">
+                <span>Ваша оценка:</span> <span
+                      class="rating rating-{{ user_rating.rating|floatformat:0 }}">{{ user_rating.rating }}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="genres">
+            {% for genre in movie.genres.all %}
+              <span class="tag">{{ genre.name }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="countries">
+            {% for country in movie.countries.all %}
+              <span class="tag">{{ country.name }}</span>
+            {% endfor %}
+          </div>
+        
+          <div class="user-movie-list">
+            <label for="movie-list">Добавить в список</label>
+            <select id="movie-list" name="movie-list">
+              <option value="">Выберите список</option>
+              {% for list_type in list_types %}
+                <option value="{{ list_type.0 }}">{{ list_type.1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="movie-content">
+        <div class="description">
+          <h3>Описание</h3>
+          <p>{{ movie.description|default:"Описание отсутствует" }}</p>
+        </div>
+
+        <div class="player">
+          <video
+                  id="video"
+                  class="video-js"
+                  controls
+                  preload="auto"
+                  width="700"
+                  height="500"
+                  data-setup="{}"
+                  poster="{{ random_frame_url|default:movie.poster.url }}"
+          >
+            <source src="{% url 'movie-stream' movie.id %}" type="video/mp4"/>
+            <source src="{% url 'movie-stream' movie.id %}" type="video/webm"/>
+            Не удалось загрузить видео
+          </video>
+        </div>
+
+      </div>
+    </div>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          const stars = document.querySelectorAll('.star');
+          const ratingValue = document.getElementById('selected-rating');
+          const submitBtn = document.getElementById('submit-rating');
+
+          if (stars.length > 0) {
+              let currentRating = 0;
+              let hoverRating = 0;
+              
+              stars.forEach(star => {
+                  star.addEventListener('mouseover', function () {
+                      const value = parseInt(this.getAttribute('data-value'));
+                      hoverRating = value;
+                      updateStars();
+                  });
+
+                  star.addEventListener('mouseout', function () {
+                      hoverRating = 0;
+                      updateStars();
+                  });
+
+                  star.addEventListener('click', function () {
+                      currentRating = parseInt(this.getAttribute('data-value'));
+                      ratingValue.textContent = currentRating;
+                      submitBtn.disabled = false;
+                      updateStars();
+                  });
+              });
+
+              function updateStars() {
+                  const rating = hoverRating || currentRating;
+
+                  stars.forEach(star => {
+                      const value = parseInt(star.getAttribute('data-value'));
+                      if (value <= rating) {
+                          star.style.color = '#ffd700'; // Золотой цвет для выбранных звезд
+                          star.style.textShadow = '0 0 5px rgba(255, 215, 0, 0.5)';
+                      } else {
+                          star.style.color = '#d8d8d8'; // Серый цвет для невыбранных
+                          star.style.textShadow = 'none';
+                      }
+                  });
+              }
+              
+              submitBtn.addEventListener('click', function () {
+                  const movieId = "{{ movie.id }}";
+                  const rating = currentRating;
+
+                  fetch("{% url 'rate-movie' %}", {
+                      method: "POST",
+                      headers: {
+                          'Content-Type': 'application/x-www-form-urlencoded',
+                          'X-CSRFToken': "{{ csrf_token }}"
+                      },
+                      body: `movie_id=${movieId}&rating=${rating}`
+                  })
+                      .then(response => response.json())
+                      .then(data => {
+                          if (data.success) {
+                              location.reload();
+                          } else {
+                              alert("Ошибка: " + (data.error || "Неизвестная ошибка"));
+                          }
+                      })
+                      .catch(() => {
+                          alert("Произошла ошибка при отправке оценки");
+                      });
+              });
+          }
+      });
+  </script>
+  <script>
+      $(document).ready(function () {
+          $('select').select2({
+              theme: 'default',
+              minimumResultsForSearch: Infinity,
+              width: 'auto',
+              dropdownAutoWidth: true
+          });
+      });
+  </script>
 {% endblock %}

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import IO, Generator
 
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from .models import Movie
@@ -30,7 +31,8 @@ def ranged(
 
 def open_file(request, movie_pk: int) -> tuple:
     movie = get_object_or_404(Movie, pk=movie_pk)
-
+    if not movie.movie_file:
+        raise Http404("Файл фильма отсутствует")
     path = Path(movie.movie_file.path)
     file = path.open('rb')
     file_size = path.stat().st_size

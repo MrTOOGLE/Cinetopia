@@ -1,9 +1,11 @@
+from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q
 from django.db.models.functions import Coalesce
 from django.http import StreamingHttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView, TemplateView
 
-from cinema.models import Movie, Genre, Country
+from cinema.models import Movie, Genre, Country, Rating, UserMovieList
 from cinema.services import open_file
 
 
@@ -29,7 +31,7 @@ class HomeView(TemplateView):
 class MoviesView(ListView):
     template_name = 'cinema/movies.html'
     context_object_name = 'movies'
-    paginate_by = 20
+    paginate_by = 18
     sort_mapping = {
         '-rating': '-avg_rating',
         'rating': 'avg_rating',
@@ -136,6 +138,16 @@ class MovieDetailView(DetailView):
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'user_rating': Rating.objects.filter(
+                movie=self.object,
+                user=self.request.user
+            ).first(),
+            'list_types': UserMovieList.LIST_TYPES
+        })
+        return context
 
 def get_streaming_video(request, pk: int):
     file, status_code, content_length, content_range = open_file(request, pk)
@@ -166,3 +178,30 @@ def movie_search(request):
         results = []
 
     return JsonResponse({'movies': results})
+
+
+@require_POST
+@login_required
+def rate_movie(request):
+    movie_id = request.POST.get('movie_id')
+    rating = request.POST.get('rating')
+
+    try:
+        movie = Movie.objects.get(pk=movie_id)
+        rating = int(rating)
+
+        if rating < 1 or rating > 10:
+            return JsonResponse({'success': False, 'error': 'Оценка должна быть от 1 до 10'})
+
+        Rating.objects.update_or_create(
+            movie=movie,
+            user=request.user,
+            defaults={'rating': rating}
+        )
+
+        return JsonResponse({'success': True})
+
+    except Movie.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Фильм не найден'})
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Некорректная оценка'})

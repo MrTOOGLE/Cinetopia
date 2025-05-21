@@ -89,7 +89,7 @@
     margin-bottom: 20px;
 }
 
-.genre-tag, .country-tag {
+.tag {
     background-color: #f0f0f0;
     padding: 5px 10px;
     border-radius: 20px;
@@ -120,14 +120,112 @@
     background-color: black;
 }
 
-@media (max-width: 768px) {
-    .movie-header {
-        flex-direction: column;
-    }
+.vjs-modal-dialog-content {
+    display: none;
+}
 
-    .movie-poster {
-        flex: 0 0 auto;
-        max-width: 250px;
-        margin: 0 auto 20px;
-    }
+.vjs-error::before {
+    content: "Не удалось загрузить видео :(";
+    font-size: 2em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1;
+}
+
+.custom-rating {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.stars-container {
+    font-size: 24px;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+.star {
+    cursor: pointer;
+    color: #d8d8d8;
+    transition: all 0.2s;
+    font-size: 35px;
+}
+
+.star:hover {
+    transform: scale(1.2);
+}
+
+.rating-value {
+    margin: 10px 0;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.rate-btn {
+    background: var(--primary-color);
+    color: var(--text-light);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.rate-btn:hover {
+    background: var(--primary-hover);
+}
+
+.rate-btn:disabled {
+    background: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+.rating {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    background: #333;
+}
+
+.user-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rating-value {
+    font-size: 20px;
+}
+
+.select2-container--default .select2-selection--single{
+  border: 1px solid var(--border-light) !important;
+  border-radius: 8px;
+  min-height: 38px;
+  padding: 5px;
+  transition: var(--transition);
+  height: auto;
+  width: 100%;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--primary-color) !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true]:hover,
+.select2-container--default .select2-results__option[data-selected=true]:hover {
+  background-color: var(--primary-color) !important;
+  color: var(--text-light);
+}
+
+.select2-container--default .select2-selection--single:hover{
+  border-color: var(--primary-color) !important;
 }

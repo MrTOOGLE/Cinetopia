@@ -39,10 +39,11 @@ header .container {
 header nav ul {
     list-style: none;
     display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 header nav ul li {
-    margin-left: 20px;
     font-size: 15px;
 }
 
@@ -114,15 +115,56 @@ a.main-title:hover {
     text-align: center;
 }
 
+.carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.carousel-wrapper {
+    overflow: hidden;
+    width: 100%;
+}
+
+.carousel-btn {
+    position: absolute;
+    font-size: 30px;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    width: 40px;
+}
+
+.carousel-btn.prev {
+    left: -50px;
+    transition: 0.15s;
+}
+
+.carousel-btn:hover {
+    cursor: pointer;
+    background-color: black;
+    color: white;
+}
+
+.carousel-btn.next {
+    right: -50px;
+}
+
+.carousel-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 .movie-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px
+    gap: 20px;
+    transition: transform 0.3s ease;
+    width: max-content;
 }
 
 .movie-item {
     position: relative;
-    width: 225px;
+    width: 221px;
     height: 375px;
     background-color: #fff;
     border-radius: 8px;
@@ -131,6 +173,7 @@ a.main-title:hover {
     margin-bottom: 20px;
     text-align: center;
     transition-duration: 0.1s;
+    flex-shrink: 0;
 }
 
 .movie-item:hover {
@@ -147,11 +190,21 @@ a.main-title:hover {
     font-weight: bold;
 }
 
-.rating-none { color: gray; }
+.rating-none {
+    color: gray;
+}
 
-.rating-1, .rating-2, .rating-3 { color: #ff4d4d; }
-.rating-4, .rating-5, .rating-6 { color: #ffcc00; }
-.rating-7, .rating-8, .rating-9, .rating-10 { color: #4CAF50; }
+.rating-1, .rating-2, .rating-3 {
+    color: #ff4d4d;
+}
+
+.rating-4, .rating-5, .rating-6 {
+    color: #ffcc00;
+}
+
+.rating-7, .rating-8, .rating-9, .rating-10 {
+    color: #4CAF50;
+}
 
 .movie-item img {
     width: 100%;
@@ -160,6 +213,7 @@ a.main-title:hover {
 }
 
 .movie-item h3 {
+    padding-inline: 10px;
     margin-top: 5px;
     font-size: 18px;
     font-weight: bold;
@@ -179,7 +233,8 @@ a.main-title:hover {
 }
 
 .movie-item p {
-    font-size: 15px;
+    margin-top: 5px;
+    font-size: 14px;
     padding-inline: 10px;
 }
 

@@ -13,8 +13,11 @@ class HomeView(ListView):
     ).annotate(
         avg_rating=Avg('ratings__rating')
     ).prefetch_related(
-        'ratings'
-    )
+        'ratings',
+        'genres',
+    ).order_by(
+        '-avg_rating'
+    )[:20]
     context_object_name = 'movies'
 
 
@@ -25,7 +28,8 @@ class MovieDetailView(DetailView):
     ).annotate(
         avg_rating=Avg('ratings__rating')
     ).prefetch_related(
-        'ratings'
+        'ratings',
+        'genres',
     )
     context_object_name = 'movie'
     slug_field = 'slug'

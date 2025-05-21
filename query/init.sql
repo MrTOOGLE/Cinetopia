@@ -1,10 +1,8 @@
--- Таблица ролей пользователей
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Таблица пользователей
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -17,31 +15,26 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
--- Таблица жанров
 CREATE TABLE genres (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Таблица стран
 CREATE TABLE countries (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
--- Таблица типов фильмов
 CREATE TABLE movie_types (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Таблица атрибутов фильмов
 CREATE TABLE attributes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Таблица фильмов
 CREATE TABLE movies (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
@@ -59,7 +52,6 @@ CREATE TABLE movies (
     FOREIGN KEY (added_by) REFERENCES users(id)
 );
 
--- Связь фильмов и жанров (многие ко многим)
 CREATE TABLE movie_genres (
     movie_id INT,
     genre_id INT,
@@ -68,7 +60,6 @@ CREATE TABLE movie_genres (
     FOREIGN KEY (genre_id) REFERENCES genres(id) ON DELETE CASCADE
 );
 
--- Связь фильмов и стран (многие ко многим)
 CREATE TABLE movie_countries (
     movie_id INT,
     country_id INT,
@@ -77,7 +68,6 @@ CREATE TABLE movie_countries (
     FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE CASCADE
 );
 
--- Связь фильмов и атрибутов (многие ко многим)
 CREATE TABLE movie_attributes (
     movie_id INT,
     attribute_id INT,
@@ -86,7 +76,6 @@ CREATE TABLE movie_attributes (
     FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE
 );
 
--- Таблица оценок фильмов
 CREATE TABLE ratings (
     id INT PRIMARY KEY AUTO_INCREMENT,
     movie_id INT,
@@ -97,7 +86,6 @@ CREATE TABLE ratings (
     UNIQUE KEY (movie_id, user_id) COMMENT 'Пользователь может оставить только одну оценку фильму'
 );
 
--- Таблица списков фильмов пользователей
 CREATE TABLE user_movie_lists (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,

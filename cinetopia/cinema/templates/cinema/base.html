@@ -7,28 +7,41 @@
     <meta charset="UTF-8">
     <title>{% block title %} {% endblock %}</title>
     <link rel="stylesheet" href="{% static 'cinema/css/styles.css' %}">
+    <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet"/>
     {% block style %}{% endblock %}
 </head>
 <body>
 <header>
     <div class="container">
-        <h1>Cinetopia</h1>
+        <a class='main-title' href="{% url 'home' %}">Cinetopia</a>
         <nav>
             <ul>
                 <li><a href="/">Главная</a></li>
                 <li><a href="/about/">О нас</a></li>
                 <li><a href="/contact/">Контакты</a></li>
+                <li class="auth-links">
+                    {% if user.is_authenticated %}
+                        <span class="username">Привет, <strong>{{ user.username }}</strong>!</span>
+                        <a href="/" class="logout-btn">Выйти</a>
+                    {% else %}
+                        <a href="/" class="login-btn">Войти</a>
+                        <a href="/" class="register-btn">Регистрация</a>
+                    {% endif %}
+                </li>
             </ul>
         </nav>
     </div>
 </header>
 {% block main %}
-    <main></main>{% endblock %}
+    <main></main>
+{% endblock %}
+
+<script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
 {% block scripts %} {% endblock %}
 <footer>
-        <div class="container">
-            <p>&copy; 2025 Cinetopia. Все права защищены.</p>
-        </div>
-    </footer>
+    <div class="container">
+        <p>&copy; 2025 Cinetopia. Все права защищены.</p>
+    </div>
+</footer>
 </body>
 </html>

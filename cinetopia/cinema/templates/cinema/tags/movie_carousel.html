@@ -1,0 +1,30 @@
+<section class="movies-section">
+  <div class="container">
+    <h2>{{ title }}</h2>
+    <div class="carousel">
+      <button class="carousel-btn prev" disabled>&lt;</button>
+      <div class="carousel-wrapper">
+        <ul class="movie-list">
+          {% for movie in movies %}
+            <li class="movie-item">
+              <a href="{% url 'movie_detail' movie.slug %}">
+                <img src="{{ movie.poster.url }}" alt="Фильм {{ movie.title }}">
+                {% if movie.avg_rating %}
+                  <span class="rating rating-{{ movie.avg_rating|floatformat:"0" }}">
+                    {{ movie.avg_rating|floatformat:1 }}
+                  </span>
+                {% else %}
+                  <span class="rating rating-none">0</span>
+                {% endif %}
+                <h3 class="item-component">{{ movie.title }}</h3>
+                <h4 class="item-component">{{ movie.release_year }}</h4>
+                <p class="item-component">{{ movie.genres.all|slice:"0:4"|join:', ' }}</p>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <button class="carousel-btn next">&gt;</button>
+    </div>
+  </div>
+</section>

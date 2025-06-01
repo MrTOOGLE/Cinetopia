@@ -30,10 +30,13 @@
         <li class="auth-links">
           {% if user.is_authenticated %}
             <span class="username">Привет, <strong>{{ user.username }}</strong>!</span>
-            <a href="/" class="logout-btn">Выйти</a>
+            <form action="{% url 'logout' %}" method="POST">
+              {% csrf_token %}
+              <button type="submit" class="logout-btn">Выйти</button>
+            </form>
           {% else %}
-            <a href="/" class="login-btn">Войти</a>
-            <a href="/" class="register-btn">Регистрация</a>
+            <a href="{% url 'login' %}" class="login-btn">Войти</a>
+            <a href="{% url 'register' %}" class="register-btn">Регистрация</a>
           {% endif %}
         </li>
       </ul>

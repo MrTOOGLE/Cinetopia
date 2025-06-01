@@ -1,0 +1,35 @@
+{% extends 'user/base.html' %}
+{% block title %}Авторизация | Cinetopia{% endblock %}
+{% block main %}
+  <main>
+    <div class="auth-form">
+      <h2>Вход</h2>
+
+      <form method="post">
+        {% csrf_token %}
+
+        {% if form.errors %}
+          <ul class="errorlist">
+            <li>Неверное имя пользователя или пароль. Попробуйте снова.</li>
+          </ul>
+        {% endif %}
+
+        <div class="form-group">
+          <label for="id_username">Имя пользователя</label>
+          {{ form.username }}
+        </div>
+
+        <div class="form-group">
+          <label for="id_password">Пароль</label>
+          {{ form.password }}
+        </div>
+
+        <button type="submit" class="btn">Войти</button>
+      </form>
+
+      <div class="auth-links">
+        Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+      </div>
+    </div>
+  </main>
+{% endblock %}

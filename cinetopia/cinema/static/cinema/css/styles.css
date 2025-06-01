@@ -154,12 +154,12 @@ header nav ul li a {
     transition: all 0.3s ease;
 }
 
-.login-btn, .register-btn {
-    background-color: #4CAF50;
-    color: white;
+.register-btn {
+    background-color: var(--bg-dark);
+    color: var(--text-light)
 }
 
-.logout-btn {
+.logout-btn, .login-btn {
     background-color: #f44336;
     color: white;
 }
@@ -185,7 +185,7 @@ a.main-title:hover {
 }
 
 .movies-section .container {
-    width: 76vw;
+    width: 85vw;
     margin: 0 auto;
 }
 

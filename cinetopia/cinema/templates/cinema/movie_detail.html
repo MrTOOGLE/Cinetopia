@@ -36,22 +36,23 @@
             {% else %}
               <div class="rating rating-none" style="color: #ddd">Нет оценок</div>
             {% endif %}
-
-            {% if not user_rating %}
-              <div class="custom-rating">
-                <div class="stars-container">
-                  {% for i in "0123456789" %}
-                    <span class="star" data-value="{{ forloop.counter }}">★</span>
-                  {% endfor %}
+            {% if user.is_authenticated %}
+              {% if not user_rating %}
+                <div class="custom-rating">
+                  <div class="stars-container">
+                    {% for i in "0123456789" %}
+                      <span class="star" data-value="{{ forloop.counter }}">★</span>
+                    {% endfor %}
+                  </div>
+                  <span class="rating-value"><span id="selected-rating">0</span>/10</span>
+                  <button class="rate-btn" id="submit-rating" disabled>Оценить</button>
                 </div>
-                <span class="rating-value"><span id="selected-rating">0</span>/10</span>
-                <button class="rate-btn" id="submit-rating" disabled>Оценить</button>
-              </div>
-            {% else %}
-              <div class="user-rating">
-                <span>Ваша оценка:</span> <span
-                      class="rating rating-{{ user_rating.rating|floatformat:0 }}">{{ user_rating.rating }}</span>
-              </div>
+              {% else %}
+                <div class="user-rating">
+                  <span>Ваша оценка:</span> <span
+                        class="rating rating-{{ user_rating.rating|floatformat:0 }}">{{ user_rating.rating }}</span>
+                </div>
+              {% endif %}
             {% endif %}
           </div>
 
@@ -66,16 +67,17 @@
               <span class="tag">{{ country.name }}</span>
             {% endfor %}
           </div>
-        
-          <div class="user-movie-list">
-            <label for="movie-list">Добавить в список</label>
-            <select id="movie-list" name="movie-list">
-              <option value="">Выберите список</option>
-              {% for list_type in list_types %}
-                <option value="{{ list_type.0 }}">{{ list_type.1 }}</option>
-              {% endfor %}
-            </select>
-          </div>
+          {% if user.is_authenticated %}
+            <div class="user-movie-list">
+              <label for="movie-list">Добавить в список</label>
+              <select id="movie-list" name="movie-list">
+                <option value="">Выберите список</option>
+                {% for list_type in list_types %}
+                  <option value="{{ list_type.0 }}">{{ list_type.1 }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endif %}
         </div>
       </div>
 
@@ -116,11 +118,10 @@
           if (stars.length > 0) {
               let currentRating = 0;
               let hoverRating = 0;
-              
+
               stars.forEach(star => {
                   star.addEventListener('mouseover', function () {
-                      const value = parseInt(this.getAttribute('data-value'));
-                      hoverRating = value;
+                      hoverRating = parseInt(this.getAttribute('data-value'));
                       updateStars();
                   });
 
@@ -143,26 +144,24 @@
                   stars.forEach(star => {
                       const value = parseInt(star.getAttribute('data-value'));
                       if (value <= rating) {
-                          star.style.color = '#ffd700'; // Золотой цвет для выбранных звезд
+                          star.style.color = '#ffd700';
                           star.style.textShadow = '0 0 5px rgba(255, 215, 0, 0.5)';
                       } else {
-                          star.style.color = '#d8d8d8'; // Серый цвет для невыбранных
+                          star.style.color = '#d8d8d8'; 
                           star.style.textShadow = 'none';
                       }
                   });
               }
-              
+
               submitBtn.addEventListener('click', function () {
                   const movieId = "{{ movie.id }}";
-                  const rating = currentRating;
-
                   fetch("{% url 'rate-movie' %}", {
                       method: "POST",
                       headers: {
                           'Content-Type': 'application/x-www-form-urlencoded',
                           'X-CSRFToken': "{{ csrf_token }}"
                       },
-                      body: `movie_id=${movieId}&rating=${rating}`
+                      body: `movie_id=${movieId}&rating=${currentRating}`
                   })
                       .then(response => response.json())
                       .then(data => {

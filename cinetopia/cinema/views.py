@@ -5,8 +5,10 @@ from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView, TemplateView
 
+from cinema.filters import MovieFilter
 from cinema.models import Movie, Genre, Country, Rating, UserMovieList
 from cinema.services import open_file
+from cinema.sorters import MovieSorter
 
 
 class HomeView(TemplateView):
@@ -31,86 +33,52 @@ class HomeView(TemplateView):
 class MoviesView(ListView):
     template_name = 'cinema/movies.html'
     context_object_name = 'movies'
-    paginate_by = 18
-    sort_mapping = {
-        '-rating': '-avg_rating',
-        'rating': 'avg_rating',
-        '-release_year': '-release_year',
-        'release_year': 'release_year',
-        'title': 'title',
-        '-title': '-title'
-    }
+    paginate_by = 15
+    filter_class = MovieFilter
+    sorter_class = MovieSorter
 
     def get_queryset(self):
-        base_queryset = self._get_base_queryset()
-        filtered_queryset = self._apply_filters(base_queryset)
-
-        return self._apply_sorting(filtered_queryset)
-
-    def _get_base_queryset(self):
-        query = self.request.GET.get('query', '')
-        base_queryset = Movie.objects.filter(is_active=True)
-        if query:
-            base_queryset = base_queryset.filter(title__icontains=query)
-        base_queryset = base_queryset.prefetch_related(
+        queryset = Movie.objects.filter(
+            is_active=True
+        ).prefetch_related(
             'ratings',
             'genres',
-            'countries',
+            'countries'
         ).annotate(
-            avg_rating=Coalesce(
-                Avg('ratings__rating'),
-                0.0,
-            )
+            avg_rating=Coalesce(Avg('ratings__rating'), 0.0)
         )
-        return base_queryset
-
-    def _apply_filters(self, queryset):
-        selected_genres = self.request.GET.getlist('genre')
-        selected_types = self.request.GET.getlist('type')
-        selected_year = self.request.GET.get('year')
-        selected_country = self.request.GET.get('country')
-        rating_range = self.request.GET.get('rating', '0,10')
-        min_rating, max_rating = map(float, rating_range.split(','))
-
-        if selected_genres:
-            queryset = queryset.filter(genres__name__in=selected_genres)
-        if selected_types:
-            queryset = queryset.filter(type__in=selected_types)
-        if selected_year:
-            queryset = queryset.filter(release_year=selected_year)
-        if selected_country:
-            queryset = queryset.filter(countries__name=selected_country)
-
-        return queryset.filter(
-            avg_rating__gte=min_rating,
-            avg_rating__lte=max_rating
-        )
-
-    def _apply_sorting(self, queryset):
-        selected_sort = self.request.GET.get('sort', '-rating')
-        return queryset.order_by(self.sort_mapping.get(selected_sort, '-avg_rating'))
+        filters = self._extract_filters_from_request()
+        queryset = self.filter_class.apply_custom_filters(queryset, filters)
+        return self.sorter_class.apply_sorting(queryset, filters.get('selected_sort'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        filters = self._extract_filters_from_request()
 
-        request = self.request
-        rating_range = request.GET.get('rating', '0,10')
-        min_rating, max_rating = map(float, rating_range.split(','))
-        selected_year = request.GET.get('year', '')
         context.update({
             'genres': Genre.objects.all(),
             'countries': Country.objects.all(),
             'years': self._get_available_years(),
             'content_types': Movie.CONTENT_TYPES,
+            **filters
+        })
+        return context
+
+    def _extract_filters_from_request(self):
+        request = self.request
+        rating_range = request.GET.get('rating', '0,10').split(',')
+        selected_year = request.GET.get('year', '')
+
+        return {
             'selected_genres': request.GET.getlist('genre'),
             'selected_types': request.GET.getlist('type'),
             'selected_year': int(selected_year) if selected_year.isdigit() else 0,
             'selected_country': request.GET.get('country'),
-            'min_rating': min_rating,
-            'max_rating': max_rating,
+            'min_rating': float(rating_range[0]),
+            'max_rating': float(rating_range[1]),
             'selected_sort': request.GET.get('sort', '-rating'),
-        })
-        return context
+            'search_query': request.GET.get('search_query')
+        }
 
     @staticmethod
     def _get_available_years():
@@ -140,14 +108,16 @@ class MovieDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'user_rating': Rating.objects.filter(
-                movie=self.object,
-                user=self.request.user
-            ).first(),
-            'list_types': UserMovieList.LIST_TYPES
-        })
+        if self.request.user.is_authenticated:
+            context.update({
+                'user_rating': Rating.objects.filter(
+                    movie=self.object,
+                    user=self.request.user
+                ).first(),
+                'list_types': UserMovieList.LIST_TYPES
+            })
         return context
+
 
 def get_streaming_video(request, pk: int):
     file, status_code, content_length, content_range = open_file(request, pk)

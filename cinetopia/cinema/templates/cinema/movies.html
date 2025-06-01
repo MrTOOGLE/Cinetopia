@@ -1,5 +1,6 @@
 {% extends 'cinema/base.html' %}
 {% load static %}
+{% load utils %}
 
 {% block title %}Каталог фильмов{% endblock %}
 {% block head %}
@@ -16,8 +17,8 @@
     <section class="catalog-header">
       <div class="container">
         <h1>Каталог фильмов</h1>
-        <p>Откройте для себя тысячи фильмов всех жанров и годов выпуска. Находите новые любимые фильмы с помощью нашей
-          удобной системы фильтрации.</p>
+        <p>Добро пожаловать в ваш личный кинозал! Здесь собраны лучшие 
+          моменты мирового кинематографа, которые мы тщательно отобрали для вас.</p>
       </div>
     </section>
 
@@ -82,37 +83,46 @@
               </div>
             </div>
           </div>
-          <div class="sort-options">
-            <label for="sort">Сортировать по:</label>
-            <select id="sort" name="sort">
-              <option value="-rating" {% if selected_sort == "-rating" %}selected{% endif %}>Рейтингу (высокий → низкий)
-              </option>
-              <option value="rating" {% if selected_sort == "rating" %}selected{% endif %}>Рейтингу (низкий → высокий)
-              </option>
-              <option value="-release_year" {% if selected_sort == "-release_year" %}selected{% endif %}>Году (новые →
-                старые)
-              </option>
-              <option value="release_year" {% if selected_sort == "release_year" %}selected{% endif %}>Году (старые →
-                новые)
-              </option>
-              <option value="title" {% if selected_sort == "title" %}selected{% endif %}>Названию (А-Я)</option>
-              <option value="-title" {% if selected_sort == "-title" %}selected{% endif %}>Названию (Я-А)</option>
-            </select>
-          </div>
           <div class="filter-actions">
             <button type="button" class="reset-btn" id="reset-filters">Сбросить фильтры</button>
             <button type="submit" class="apply-btn">Применить фильтры</button>
           </div>
         </form>
       </section>
+      <div class="search-section">
+        <div></div>
+        <div class="sort-section">
+          <label for="search">Поиск по названию</label>
+          <input placeholder="Название фильма" value="{% if search_query %}{{ search_query }}{% endif %}" type="text"
+                 id="search">
+        </div>
 
+        <div class="sort-section">
+          <label for="sort">Сортировка</label>
+          <select id="sort" name="sort">
+            <option value="-rating" {% if selected_sort == "-rating" %}selected{% endif %}>Рейтингу (высокий → низкий)
+            </option>
+            <option value="rating" {% if selected_sort == "rating" %}selected{% endif %}>Рейтингу (низкий → высокий)
+            </option>
+            <option value="-release_year" {% if selected_sort == "-release_year" %}selected{% endif %}>Году (новые →
+              старые)
+            </option>
+            <option value="release_year" {% if selected_sort == "release_year" %}selected{% endif %}>Году (старые →
+              новые)
+            </option>
+            <option value="title" {% if selected_sort == "title" %}selected{% endif %}>Названию (А-Я)</option>
+            <option value="-title" {% if selected_sort == "-title" %}selected{% endif %}>Названию (Я-А)</option>
+          </select>
+        </div>
+
+      </div>
       {% if movies %}
         <div class="movie-grid">
           {% for movie in movies %}
             <div class="movie-item">
-                        <span class="rating rating-{{ movie.avg_rating|floatformat:"0" }}">
-                            {% if movie.avg_rating %}{{ movie.avg_rating }}{% else %}0{% endif %}
-                        </span>
+              <span class="rating rating-{{ movie.avg_rating|floatformat:"0" }}">
+                {% if movie.avg_rating %}{{ movie.avg_rating }}{% else %}0{% endif %}
+              </span>
               <a href="{% url 'movie_detail' movie.slug %}">
                 <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
                 <div class="movie-details">
@@ -120,71 +130,31 @@
                   <h4>{{ movie.release_year }}</h4>
                   <p>{{ movie.genres.all|slice:"0:4"|join:', ' }}</p>
                 </div>
-                
+
               </a>
             </div>
           {% endfor %}
         </div>
 
         <div class="pagination">
-          {% if movies.has_previous %}
-            <a href="?page=1
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    {% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">«
-              Первая</a>
-            <a href="?page=
+          {% if is_paginated %}
+            {% if page_obj.has_previous %}
+              <a href="?{% update_query_params request page=1 %}">«</a>
+              <a href="?{% update_query_params request page=page_obj.previous_page_number %}">‹</a>
+            {% endif %}
 
-                    
-                    
-                    
-                    
-                    
-                    {{ movies.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹
-              Предыдущая</a>
-          {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?{% update_query_params request page=num %}">{{ num }}</a>
+              {% endif %}
+            {% endfor %}
 
-          <span class="current">
-                    Страница {{ movies.number }} из {{ movies.paginator.num_pages }}
-                </span>
-
-          {% if movies.has_next %}
-            <a href="?page=
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    {{ movies.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Следующая
-              ›</a>
-            <a href="?page=
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    {{ movies.paginator.num_pages }}{% for key, value in request.GET.items %} {% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Последняя
-              »</a>
+            {% if page_obj.has_next %}
+              <a href="?{% update_query_params request page=page_obj.next_page_number %}">›</a>
+              <a href="?{% update_query_params request page=page_obj.paginator.num_pages %}">»</a>
+            {% endif %}
           {% endif %}
         </div>
       {% else %}
@@ -199,6 +169,20 @@
 {% block scripts %}
   <script>
       $(document).ready(function () {
+          $('#sort').on('change', function () {
+              const params = new URLSearchParams(window.location.search);
+              params.set('sort', $(this).val());
+              params.set('page', '1');
+              window.location.search = params.toString();
+          });
+          $('#search').on('keypress', function (e) {
+              if (e.which === 13) {
+                  const params = new URLSearchParams(window.location.search);
+                  params.set('search_query', $(this).val());
+                  params.set('page', '1');
+                  window.location.search = params.toString();
+              }
+          });
           $('#rating').slider({
               tooltip: 'hide',
               formatter: function (value) {
@@ -216,6 +200,7 @@
               $('#rating-min').text('0');
               $('#rating-max').text('10');
               $('#sort').val('-rating').trigger('change');
+              window.location.href = window.location.pathname;
           });
           $('select').select2({
               theme: 'default',

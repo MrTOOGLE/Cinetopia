@@ -29,6 +29,7 @@
     <option name="TEMPLATE_FOLDERS">
       <list>
         <option value="$MODULE_DIR$/cinetopia/cinema/templates" />
+        <option value="$MODULE_DIR$/cinetopia/shop/templates" />
       </list>
     </option>
   </component>

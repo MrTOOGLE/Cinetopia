@@ -1,0 +1,187 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Магазин | 🎟️Cinetopia{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+{% endblock %}
+
+{% block main %}
+  <main class="shop-container">
+    <aside class="filters">
+      <div class="filter-section">
+        <span class="filter-title">Категории</span>
+        <div class="filter-option {% if not selected_category %}active{% endif %}">
+          <a href="?">Все товары</a>
+        </div>
+        {% for value, name in categories.items %}
+          <div class="filter-option {% if selected_category == value %}active{% endif %}">
+            <a href="?category={{ value }}">{{ name }}</a>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Сортировка</span>
+        {% for value, name in sort_options.items %}
+          <div class="filter-option {% if selected_sort == value %}active{% endif %}">
+            <a href="?sort={{ value }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ name }}</a>
+          </div>
+        {% endfor %}
+      </div>
+    </aside>
+
+    <div class="products-container">
+      <div class="sorting">
+        <h2>{% if selected_category %}{% else %}Все товары{% endif %}</h2>
+        <span>{{ page_obj.paginator.count }} товаров</span>
+      </div>
+      <div class="products">
+        {% for product in page_obj %}
+          <div class="product-card" data-product-id="{{ product.id }}">
+            <a href="#" class="product-image-link">
+              <div class="product-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              </div>
+            </a>
+            <div class="product-info">
+              <h3 class="product-title">
+                <a href="#">{{ product.name }}</a>
+              </h3>
+              <div class="product-price">
+                {{ product.get_price|floatformat:2 }} {{ product.currency }}
+                {% if product.discount > 0 %}
+                  <span class="old-price">{{ product.price|floatformat:2 }} {{ product.currency }}</span>
+                  <span class="discount-badge">-{{ product.discount }}%</span>
+                {% endif %}
+              </div>
+              <div class="product-actions">
+                <button class="add-to-cart-btn" data-product-id="{{ product.id }}">
+                  В корзину
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if is_paginated %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">&laquo;</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">{{ page_obj.previous_page_number }}</a>
+          {% endif %}
+
+          <a href="#" class="active">{{ page_obj.number }}</a>
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">{{ page_obj.next_page_number }}</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">&raquo;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </main>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Функция обновления состояния кнопки
+    function updateButtonState(productId, inCart = false) {
+        const btn = $(`.add-to-cart-btn[data-product-id="${productId}"]`);
+        if (inCart) {
+            btn.addClass('in-cart').text('В корзине');
+        } else {
+            btn.removeClass('in-cart').text('В корзину');
+        }
+    }
+
+    // Функция проверки, есть ли товар в корзине
+    function checkCartState() {
+        $.ajax({
+            url: '/cart/',
+            method: 'GET',
+            success: function(data) {
+                // Парсим HTML ответа чтобы получить данные о корзине
+                const parser = new DOMParser();
+                const htmlDoc = parser.parseFromString(data, 'text/html');
+                
+                // Находим все элементы товаров в корзине
+                const cartItems = htmlDoc.querySelectorAll('.cart-item');
+                const cartItemsMap = {};
+                
+                cartItems.forEach(item => {
+                    const productId = item.dataset.productId;
+                    cartItemsMap[productId] = true;
+                });
+                
+                // Обновляем состояние всех кнопок
+                $('.add-to-cart-btn').each(function() {
+                    const productId = $(this).data('product-id');
+                    updateButtonState(productId, cartItemsMap[productId]);
+                });
+            }
+        });
+    }
+
+    // Проверяем состояние корзины при загрузке страницы
+    checkCartState();
+
+    // Обработчик клика по кнопке "В корзину"/"В корзине"
+    $('.add-to-cart-btn').click(function(e) {
+        e.preventDefault();
+        const productId = $(this).data('product-id');
+        const isInCart = $(this).hasClass('in-cart');
+        
+        if (isInCart) {
+            // Если товар уже в корзине - удаляем его
+            $.ajax({
+                url: `/cart/remove/${productId}/`,
+                method: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    if (data.success) {
+                        updateButtonState(productId, false);
+                        updateCartIndicator(data.cart_total_items);
+                    }
+                }
+            });
+        } else {
+            // Если товара нет в корзине - добавляем
+            $.ajax({
+                url: `/cart/add/${productId}/`,
+                method: 'POST',
+                data: JSON.stringify({
+                    quantity: 1,
+                    update: false
+                }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    if (data.success) {
+                        updateButtonState(productId, true);
+                        updateCartIndicator(data.cart_total_items);
+                    }
+                }
+            });
+        }
+    });
+
+    // Функция обновления индикатора корзины в шапке
+    function updateCartIndicator(count) {
+        $('.cart-count').remove();
+        if (count > 0) {
+            $('#cart').append(`
+                <span class="cart-count">${count}</span>
+            `);
+        }
+    }
+});
+</script>
+{% endblock %}

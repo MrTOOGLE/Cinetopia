@@ -27,6 +27,15 @@
         <li><a href="/">Главная</a></li>
         <li><a href="/about/">О нас</a></li>
         <li><a href="/contact/">Контакты</a></li>
+        <li><a href="/shop/">Магазин</a></li>
+        <li>
+          <a href="{% url 'cart_detail' %}" class="cart-link" id="cart">
+            🛒
+            {% if cart|length > 0 %}
+              <span class="cart-count">{{ cart|length }}</span>
+            {% endif %}
+          </a>
+        </li>
         <li class="auth-links">
           {% if user.is_authenticated %}
             <span class="username">Привет, <strong>{{ user.username }}</strong>!</span>

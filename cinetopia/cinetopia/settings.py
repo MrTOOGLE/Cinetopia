@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'user',
-    'cinema'
+    'cinema',
+    'shop'
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'shop.context_processors.cart'
             ],
         },
     },
@@ -126,3 +128,5 @@ EMAIL_USE_TLS = env('EMAIL_USE_SSL')
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+CART_SESSION_ID = 'cart'

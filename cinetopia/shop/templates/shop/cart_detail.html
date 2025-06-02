@@ -1,0 +1,156 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Корзина | 🎟️Cinetopia{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+{% endblock %}
+
+{% block main %}
+  <main class="cart-container">
+    <h1 class="cart-title">Ваша корзина</h1>
+
+    {% if cart|length > 0 %}
+      <div class="cart-items">
+        {% for item in cart %}
+          <div class="cart-item" data-product-id="{{ item.product.id }}">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+            <div class="cart-item-details">
+              <h3 class="cart-item-title">{{ item.product.name }}</h3>
+              <div class="cart-item-price">{{ item.price|floatformat:2  }} {{ item.product.currency }}</div>
+              <div class="cart-item-quantity">
+                <div class="quantity-control">
+                  <button class="quantity-btn minus">-</button>
+                  <input type="number" class="quantity-input" 
+                         value="{{ item.quantity }}" min="1" 
+                         data-product-id="{{ item.product.id }}">
+                  <button class="quantity-btn plus">+</button>
+                </div>
+                <a href="#" class="cart-item-remove" data-product-id="{{ item.product.id }}">Удалить</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Товаров:</span>
+          <span id="total-items">{{ cart|length }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Общая стоимость:</span>
+          <span id="total-price">{{ cart.get_total_price|floatformat:2 }} ₽</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span>Итого:</span>
+          <span id="total-price-summary">{{ cart.get_total_price|floatformat:2  }} ₽</span>
+        </div>
+        <button class="checkout-btn">Оформить заказ</button>
+      </div>
+    {% else %}
+      <div class="empty-cart">
+        <p>Ваша корзина пуста</p>
+        <a href="{% url 'shop' %}" class="continue-shopping">Продолжить покупки</a>
+      </div>
+    {% endif %}
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function() {
+      $('.plus').click(function(e) {
+        e.preventDefault();
+        const input = $(this).siblings('.quantity-input');
+        const currentVal = parseInt(input.val());
+        input.val(currentVal + 1).trigger('change');
+      });
+
+      $('.minus').click(function(e) {
+        e.preventDefault();
+        const input = $(this).siblings('.quantity-input');
+        const currentVal = parseInt(input.val());
+        if (currentVal > 1) {
+          input.val(currentVal - 1).trigger('change');
+        }
+      });
+
+      $('.quantity-input').change(function() {
+        const productId = $(this).data('product-id');
+        const quantity = $(this).val();
+        updateCart(productId, quantity);
+      });
+
+      $('.cart-item-remove').click(function(e) {
+        e.preventDefault();
+        const productId = $(this).data('product-id');
+        removeFromCart(productId);
+      });
+
+      function updateCart(productId, quantity) {
+        $.ajax({
+          url: `/cart/add/${productId}/`,
+          method: 'POST',
+          data: JSON.stringify({
+            quantity: quantity,
+            update: true
+          }),
+          contentType: 'application/json',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          success: function(data) {
+            if (data.success) {
+              updateCartIndicator(data.cart_total_items);
+              $('#total-items').text(data.cart_total_items);
+              $('#total-price').text(data.cart_total_price + ' ₽');
+              $('#total-price-summary').text(data.cart_total_price + ' ₽');
+            }
+          }
+        });
+      }
+
+      function removeFromCart(productId) {
+        $.ajax({
+          url: `/cart/remove/${productId}/`,
+          method: 'POST',
+          contentType: 'application/json',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          success: function(data) {
+            if (data.success) {
+              $(`.cart-item[data-product-id="${productId}"]`).remove();
+              updateCartIndicator(data.cart_total_items);
+              $('#total-items').text(data.cart_total_items);
+              $('#total-price').text(data.cart_total_price + ' ₽');
+              $('#total-price-summary').text(data.cart_total_price + ' ₽');
+              
+              if (data.cart_total_items === 0) {
+                $('.cart-items').html(`
+                  <div class="empty-cart">
+                    <p>Ваша корзина пуста</p>
+                    <a href="{% url 'shop' %}" class="continue-shopping">Продолжить покупки</a>
+                  </div>
+                `);
+              }
+            }
+          }
+        });
+      }
+
+      function updateCartIndicator(count) {
+        $('.cart-count').remove();
+        if (count > 0) {
+          $('#cart').append(`
+            <span class="cart-count">${count}</span>
+          `);
+        }
+      }
+
+      updateCartIndicator({{ cart|length }});
+    });
+  </script>
+{% endblock %}

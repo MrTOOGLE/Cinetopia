@@ -1,0 +1,68 @@
+{% extends "cinema/base.html" %}
+{% load static %}
+
+{% block title %}
+  Мои заказы | 🎟️Cinetopia
+{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static "orders/css/user_orders.css" %}">
+{% endblock %}
+{% block main %}
+  <main>
+    <div class="account-content">
+      <h1 class="account-title">Мои заказы</h1>
+
+      {% if orders %}
+        <div class="orders-list">
+          {% for order in orders %}
+            <div class="order-card">
+              <div class="order-header">
+                <div class="order-number">
+                  Заказ #{{ order.id }}
+                </div>
+                <div class="order-date">
+                  {{ order.created|date:"d.m.Y" }}
+                </div>
+                <div class="order-status {{ order.status }}">
+                  {{ order.get_status_display }}
+                </div>
+              </div>
+
+              <div class="order-body">
+                <div class="order-items-preview">
+                  {% for item in order.items.all|slice:":3" %}
+                    <div class="order-item-preview">
+                      <span class="order-item-name">{{ item.product.name }}</span>
+                      <span class="order-item-quantity">{{ item.quantity }} × {{ item.price }} ₽</span>
+                    </div>
+                  {% endfor %}
+                  {% if order.items.count > 3 %}
+                    <div class="order-more-items">
+                      и ещё {{ order.items.count|add:"-3" }} товар(ов)
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div class="order-footer">
+                  <div class="order-total">
+                    Итого: <span>{{ order.get_total_cost }} ₽</span>
+                  </div>
+                  <a href="{% url 'order_detail' order.pk %}" class="order-detail-link">
+                    Подробнее
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-orders">
+          <p>У вас пока нет заказов</p>
+          <a href="{% url 'shop' %}" class="btn-primary">
+            Перейти в магазин
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+{% endblock %}

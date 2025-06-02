@@ -1,0 +1,130 @@
+{% extends "cinema/base.html" %}
+{% load static %}
+
+{% block title %}
+  Личный кабинет | 🎟️Cinetopia
+{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static "user/css/account.css" %}">
+{% endblock %}
+{% block main %}
+<main class="account-container">
+    <div class="account-sidebar">
+      <div class="account-header">
+        <div class="account-avatar">
+          {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+          {% else %}
+            <div class="avatar-placeholder">{{ user.username|first|upper }}</div>
+          {% endif %}
+        </div>
+        <h1 class="account-username">{{ user.username }}</h1>
+        <a href="#" class="edit-profile-btn">Редактировать профиль</a>
+      </div>
+      
+      <nav class="account-nav">
+        <ul>
+          <li class="active"><a href="#profile">Профиль</a></li>
+          <li><a href="#movies">Мои фильмы</a></li>
+          <li><a href="#orders">Мои заказы</a></li>
+          <li><a href="#settings">Настройки</a></li>
+        </ul>
+      </nav>
+    </div>
+    
+    <div class="account-content">
+      <section id="profile" class="account-section">
+        <h2 class="section-title">Мой профиль</h2>
+        <div class="profile-info">
+          <div class="info-row">
+            <span class="info-label">Имя:</span>
+            <span class="info-value">{{ user.first_name|default:"Не указано" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Фамилия:</span>
+            <span class="info-value">{{ user.last_name|default:"Не указано" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ user.email }}</span>
+          </div>
+          {% if user.profile.birth_date %}
+            <div class="info-row">
+              <span class="info-label">Дата рождения:</span>
+              <span class="info-value">{{ user.profile.birth_date|date:"d.m.Y" }}</span>
+            </div>
+          {% endif %}
+          {% if user.profile.phone %}
+            <div class="info-row">
+              <span class="info-label">Телефон:</span>
+              <span class="info-value">{{ user.profile.phone }}</span>
+            </div>
+          {% endif %}
+          {% if user.profile.bio %}
+            <div class="info-row">
+              <span class="info-label">О себе:</span>
+              <p class="info-bio">{{ user.profile.bio }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+      
+      <section id="movies" class="account-section">
+        <h2 class="section-title">Мои фильмы</h2>
+        
+        <div class="movie-stats">
+          {% for stat in movie_stats %}
+            <div class="stat-item">
+              <span class="stat-count">{{ stat.count }}</span>
+              <span class="stat-label">{{ stat.get_list_type_display }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        
+        <h3 class="subsection-title">Недавно добавленные</h3>
+        <div class="recent-movies">
+          {% for item in recent_movies %}
+            <div class="movie-card">
+              <a href="{{ item.movie.get_absolute_url }}">
+                {% if item.movie.poster %}
+                  <img src="{{ item.movie.poster.url }}" alt="{{ item.movie.title }}">
+                {% else %}
+                  <div class="movie-poster-placeholder"></div>
+                {% endif %}
+                <span class="movie-badge {{ item.list_type }}">{{ item.get_list_type_display }}</span>
+                <h4 class="movie-title">{{ item.movie.title }}</h4>
+              </a>
+            </div>
+          {% empty %}
+            <p class="empty-message">Вы еще не добавили ни одного фильма</p>
+          {% endfor %}
+        </div>
+        
+        <a href="/" class="view-all-link">Смотреть все →</a>
+      </section>
+      
+      <section id="orders" class="account-section">
+        <h2 class="section-title">Мои заказы</h2>
+        
+        {% if recent_orders %}
+          <div class="orders-list">
+            {% for order in recent_orders %}
+              <div class="order-card">
+                <div class="order-header">
+                  <span class="order-number">Заказ #{{ order.id }}</span>
+                  <span class="order-date">{{ order.created|date:"d.m.Y" }}</span>
+                  <span class="order-status {{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <div class="order-total">Сумма: {{ order.get_total_cost }} ₽</div>
+                <a href="{% url 'order_detail' order.id %}" class="order-details-link">Подробнее</a>
+              </div>
+            {% endfor %}
+          </div>
+          <a href="{% url 'user_orders' %}" class="view-all-link">Смотреть все →</a>
+        {% else %}
+          <p class="empty-message">У вас пока нет заказов</p>
+        {% endif %}
+      </section>
+    </div>
+  </main>
+{% endblock %}

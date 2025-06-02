@@ -1,0 +1,115 @@
+{% extends "cinema/base.html" %}
+{% load static %}
+
+{% block title %}
+  Заказ {{ order.id }} | 🎟️Cinetopia
+{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static "orders/css/order_detail.css" %}">
+{% endblock %}
+{% block main %}
+  <div class="order-detail-container">
+    <div class="order-detail-header">
+      <h1 class="order-detail-title">Заказ #{{ order.id }}</h1>
+      <div class="order-detail-status {{ order.status }}">
+        {{ order.get_status_display }}
+      </div>
+    </div>
+
+    <div class="order-detail-grid">
+      <div class="order-detail-items">
+        <h2 class="order-detail-subtitle">Товары в заказе</h2>
+
+        <div class="order-items-list">
+          {% for item in order.items.all %}
+            <div class="order-detail-item">
+              <div class="order-item-image">
+                {% if item.product.image %}
+                  <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                {% endif %}
+              </div>
+
+              <div class="order-item-info">
+                <h3 class="order-item-name">{{ item.product.name }}</h3>
+                <div class="order-item-meta">
+                  <span class="order-item-price">{{ item.price }} ₽</span>
+                  <span class="order-item-quantity">× {{ item.quantity }}</span>
+                  {% if item.discount %}
+                    <span class="order-item-discount">Скидка {{ item.discount }}%</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="order-item-total">
+                {{ item.get_cost }} ₽
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="order-summary">
+          <div class="order-summary-row">
+            <span>Сумма заказа:</span>
+            <span>{{ order.get_total_cost_before_discount }} ₽</span>
+          </div>
+          {% if order.discount %}
+            <div class="order-summary-row">
+              <span>Скидка:</span>
+              <span class="text-discount">-{{ order.discount }}%</span>
+            </div>
+          {% endif %}
+          <div class="order-summary-row total">
+            <span>Итого к оплате:</span>
+            <span class="order-total-price">{{ order.get_total_cost }} ₽</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-detail-info">
+        <h2 class="order-detail-subtitle">Информация о заказе</h2>
+
+        <div class="order-info-card">
+          <div class="order-info-section">
+            <h3 class="order-info-title">Данные покупателя</h3>
+            <div class="order-info-content">
+              <p>{{ order.user.username }}</p>
+              <p>{{ order.user.email }}</p>
+              <p>{{ order.phone }}</p>
+            </div>
+          </div>
+
+          <div class="order-info-section">
+            <h3 class="order-info-title">Адрес доставки</h3>
+            <div class="order-info-content">
+              <p>{{ order.country }}, {{ order.city }}</p>
+              <p>{{ order.address }}</p>
+            </div>
+          </div>
+
+          <div class="order-info-section">
+            <h3 class="order-info-title">Детали заказа</h3>
+            <div class="order-info-content">
+              <p><strong>Дата:</strong> {{ order.created|date:"d.m.Y H:i" }}</p>
+              <p><strong>Статус:</strong> {{ order.get_status_display }}</p>
+              <p><strong>Оплата:</strong> {% if order.paid %}Оплачен{% else %}Не оплачен{% endif %}</p>
+            </div>
+          </div>
+
+          {% if order.note %}
+            <div class="order-info-section">
+              <h3 class="order-info-title">Комментарий</h3>
+              <div class="order-info-content">
+                <p>{{ order.note }}</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <a href="{% url 'account' %}" class="back-to-orders">
+          ← В личный кабинет
+        </a>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

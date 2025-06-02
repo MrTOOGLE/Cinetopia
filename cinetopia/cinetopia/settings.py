@@ -12,10 +12,8 @@ environ.Env.read_env()
 DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,9 +23,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'user',
-    'cinema',
-    'shop'
+    'user.apps.UserConfig',
+    'cinema.apps.CinemaConfig',
+    'shop.apps.ShopConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
@@ -62,16 +61,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'cinetopia.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
     'default': env.db()
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -89,10 +82,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -101,21 +90,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-# static files
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
 STATICFILES_DIRS = []
 
-# media files
 MEDIA_ROOT = BASE_DIR / 'media/'
 MEDIA_URL = '/media/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

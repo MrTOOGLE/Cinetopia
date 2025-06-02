@@ -1,8 +1,11 @@
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView as BaseLoginView
+from django.db.models import Count
 from django.shortcuts import redirect
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
 
+from cinema.models import UserMovieList
+from orders.models import Order
 from .forms import RegisterForm, LoginForm
 
 
@@ -20,3 +23,25 @@ class RegisterView(FormView):
         user = form.save()
         login(self.request, user)
         return redirect(self.get_success_url())
+
+
+class AccountView(TemplateView):
+    template_name = 'user/account.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        movie_stats = UserMovieList.objects.filter(user=user).values(
+            'list_type'
+        ).annotate(
+            count=Count('id')
+        ).order_by('list_type')
+
+        context['movie_stats'] = movie_stats
+        context['recent_orders'] = Order.objects.filter(user=user).order_by('-created')[:3]
+        context['recent_movies'] = UserMovieList.objects.filter(
+            user=user
+        ).select_related('movie').order_by('-added_at')[:4]
+
+        return context

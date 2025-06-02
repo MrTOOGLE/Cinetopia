@@ -1,0 +1,58 @@
+{% extends "cinema/base.html" %}
+{% load static %}
+
+{% block title %}
+  Заказ создан | 🎟️Cinetopia
+{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{% static "orders/css/styles.css" %}">
+{% endblock %}
+{% block main %}
+  <div class="order-success-container">
+    <div class="order-success-card">
+      <div class="order-success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+        </svg>
+      </div>
+
+      <h1 class="order-success-title">Спасибо за ваш заказ!</h1>
+      <p class="order-success-message">Ваш заказ №{{ order.id }} успешно оформлен.</p>
+
+      <div class="order-info-box">
+        <h2 class="order-info-title">Информация о заказе</h2>
+
+        <div class="order-info-grid">
+          <div class="order-info-item">
+            <span class="order-info-label">Номер заказа:</span>
+            <span class="order-info-value">{{ order.id }}</span>
+          </div>
+
+          <div class="order-info-item">
+            <span class="order-info-label">Дата:</span>
+            <span class="order-info-value">{{ order.created|date:"d.m.Y H:i" }}</span>
+          </div>
+
+          <div class="order-info-item">
+            <span class="order-info-label">Статус:</span>
+            <span class="order-info-value">{{ order.get_status_display }}</span>
+          </div>
+
+          <div class="order-info-item">
+            <span class="order-info-label">Сумма:</span>
+            <span class="order-info-value">{{ order.get_total_cost|floatformat:2 }} ₽</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-success-actions">
+        <a href="{% url 'shop' %}" class="order-back-btn">
+          Вернуться в магазин
+        </a>
+        <a href="#" class="order-detail-btn">
+          Детали заказа
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -38,7 +38,7 @@
         </li>
         <li class="auth-links">
           {% if user.is_authenticated %}
-            <span class="username">Привет, <strong>{{ user.username }}</strong>!</span>
+            <a href="{% url 'account' %}"><span class="username">Привет, <strong>{{ user.username }}</strong>!</span></a>
             <form action="{% url 'logout' %}" method="POST">
               {% csrf_token %}
               <button type="submit" class="logout-btn">Выйти</button>

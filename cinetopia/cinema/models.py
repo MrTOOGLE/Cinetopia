@@ -111,3 +111,7 @@ class UserMovieList(models.Model):
 
     def __str__(self):
         return f"{self.movie} - {self.user} ({self.list_type})"
+
+    @property
+    def list_type_name(self):
+        return self.get_list_type_display()

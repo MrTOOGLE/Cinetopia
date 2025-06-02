@@ -1,6 +1,6 @@
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView as BaseLoginView
-from django.db.models import Count
+from django.db.models import Count, F, Case, When, CharField, Value
 from django.shortcuts import redirect
 from django.views.generic import FormView, TemplateView
 
@@ -35,7 +35,14 @@ class AccountView(TemplateView):
         movie_stats = UserMovieList.objects.filter(user=user).values(
             'list_type'
         ).annotate(
-            count=Count('id')
+            count=Count('id'),
+            list_name=Case(
+                *[
+                    When(list_type=list_type, then=Value(value))
+                    for list_type, value in UserMovieList.LIST_TYPES
+                ],
+                output_field=CharField()
+            )
         ).order_by('list_type')
 
         context['movie_stats'] = movie_stats
